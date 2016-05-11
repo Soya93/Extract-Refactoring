@@ -28,7 +28,7 @@ import java.io.File;
 
 public class ExtractAdapter extends LightRefactoringTestCase {
 
-  private static final String BEFORE_TEST_FILE_ENDING = ".after.java";
+  private static final String BEFORE_TEST_FILE_ENDING = ".java";
   private static final String AFTER_TEST_FILE_ENDING = ".after.java";
 
   public void selectTextInput(String selectedText) {
