@@ -1,0 +1,11 @@
+/android
+/config
+/system
+.idea/workspace.xml
+.idea/
+.project
+/out
+.DS_Store
+/test-system
+/test-config
+*.pyc
