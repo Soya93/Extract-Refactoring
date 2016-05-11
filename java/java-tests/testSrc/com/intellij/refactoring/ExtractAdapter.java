@@ -31,31 +31,25 @@ public class ExtractAdapter extends LightRefactoringTestCase {
   private static final String BEFORE_TEST_FILE_ENDING = ".java";
   private static final String AFTER_TEST_FILE_ENDING = ".after.java";
 
-  public void selectTextInput(String selectedText) {
-    // TODO Set text
-  }
-
   @Test
   public void test() throws Exception {
+    // TODO Remove
     choiceInput(ExtractModel.Choice.Variable);
+    refactorVariable("b");
   }
 
   public void choiceInput(ExtractModel.Choice choice) throws Exception {
-    switch (choice) {
-      case Variable:
-        String baseName = "/refactoring/testExtract/RefactorVariable";
-        configureByFile(baseName + BEFORE_TEST_FILE_ENDING);
-        MockIntroduceVariableHandler handler = new MockIntroduceVariableHandler("b", false, false, true, "boolean");
-        handler.invoke(getProject(), getEditor(), getFile(), null);
-        checkResultByFile(baseName + AFTER_TEST_FILE_ENDING);
-        break;
-      default:
-        throw new IllegalStateException("No choice selected");
-    }
+   if (choice != null) {
+      configureByFile(choice.getFileName() + BEFORE_TEST_FILE_ENDING);
+    } else {
+     throw new IllegalStateException("No choice selected");
+   }
   }
 
-  public void refactorVariable() {
-
+  public void refactorVariable(String name) {
+    MockIntroduceVariableHandler handler = new MockIntroduceVariableHandler(name, false, false, true, "boolean");
+    handler.invoke(getProject(), getEditor(), getFile(), null);
+    checkResultByFile(ExtractModel.Choice.Variable.getFileName() + AFTER_TEST_FILE_ENDING);
   }
 
   public void refactorConstant() {

@@ -15,30 +15,37 @@
  */
 package com.intellij.refactoring;
 
-import com.intellij.refactoring.ExtractAdapter;
 import nz.ac.waikato.modeljunit.Action;
 import nz.ac.waikato.modeljunit.FsmModel;
 
 public class ExtractModel implements FsmModel {
 
-  public enum Choice implements GuardInterface {
-    Variable(State.Variable) {
-      @Override
-      public boolean guard(State state) {
-        return state.equals(State.Extract);
-      }
-    }; // TODO Similar for all other choices.
+  public enum Choice {
+    Variable("/refactoring/testExtract/RefactorVariable"),
+    Constant(""),
+    Field(""),
+    Parameter(""),
+    FunctionalParameter(""),
+    ParameterObject(""),
+    Method(""),
+    MethodObject(""),
+    Delegate(""),
+    Interface(""),
+    Superclass("");
 
-    private State nextState;
+    private String fileName;
 
-    private Choice(State nextState) {
-      this.nextState = nextState;
+    private Choice(String fileName) {
+      this.fileName = fileName;
+    }
+
+    public String getFileName() {
+      return fileName;
     }
   }
 
   private enum State {
     Home,
-    Extract,
     Variable,
     Constant,
     Field,
@@ -83,28 +90,8 @@ public class ExtractModel implements FsmModel {
   }
 
   @Action
-  public void selectTextInput() {
-    adapter.selectTextInput(selectedText);
-    state = State.Extract;
-  }
-
-  @Action
-  public void choiceInput() throws Exception {
-    choice = Choice.Variable;
-    if (choiceInputGuard()) {
-      adapter.choiceInput(choice);
-      state = State.valueOf(choice.name());
-    }
-    reset(true);
-  }
-
-  public boolean choiceInputGuard() {
-    return choice.guard(state) && selectedText != null && !selectedText.isEmpty();
-  }
-
-  // Variable
-  @Action
   public void variable() {
+    state = State.Variable;
     if(variableGuard()) {
       state = State.RefactorVariable;
     } else {
@@ -112,19 +99,19 @@ public class ExtractModel implements FsmModel {
     }
   }
 
-  public boolean variableGuard(){
+  private boolean variableGuard(){
     return state == State.Variable && isExpression(selectedText);
   }
 
   @Action
   public void refactorVariable() {
     if(refactorVariableGuard()) {
-      adapter.refactorVariable();
+      adapter.refactorVariable("b");
       state = State.Home;
     }
   }
 
-  public boolean refactorVariableGuard(){
+  private boolean refactorVariableGuard(){
     return state == State.RefactorVariable;
   }
 
@@ -139,7 +126,7 @@ public class ExtractModel implements FsmModel {
     }
   }
 
-  public boolean constantGuard(){
+  private boolean constantGuard(){
     return state == State.Constant && (isExpression(selectedText) || isLocalVar(selectedText));
   }
 
@@ -151,7 +138,7 @@ public class ExtractModel implements FsmModel {
     }
   }
 
-  public boolean refactorConstantGuard(){
+  private boolean refactorConstantGuard(){
     return state == State.RefactorConstant;
   }
 
@@ -165,7 +152,7 @@ public class ExtractModel implements FsmModel {
     }
   }
 
-  public boolean fieldGuard(){
+  private boolean fieldGuard(){
     return state == State.Field && !isVoid(selectedText);
   }
 
@@ -177,7 +164,7 @@ public class ExtractModel implements FsmModel {
     }
   }
 
-  public boolean refactorFieldGuard(){
+  private boolean refactorFieldGuard(){
     return state == State.RefactorConstant;
   }
 
@@ -192,7 +179,7 @@ public class ExtractModel implements FsmModel {
     }
   }
 
-  public boolean parameterGuard(){
+  private boolean parameterGuard(){
     return state == State.Parameter && (isExpression(selectedText) || isLocalVar(selectedText));
   }
 
@@ -204,10 +191,9 @@ public class ExtractModel implements FsmModel {
     }
   }
 
-  public boolean refactorParameterGuard(){
+  private boolean refactorParameterGuard(){
     return state == State.RefactorParameter;
   }
-
 
   //Functional Parameter
   @Action
@@ -219,7 +205,7 @@ public class ExtractModel implements FsmModel {
     }
   }
 
-  public boolean functionalParameterGuard(){
+  private boolean functionalParameterGuard(){
     return state == State.FunctionalParameter && isSupportedContext(selectedText);
   }
 
@@ -230,10 +216,9 @@ public class ExtractModel implements FsmModel {
     }
   }
 
-  public boolean refactorFunctionalParameterGuard(){
+  private boolean refactorFunctionalParameterGuard(){
     return state == State.RefactorFunctionalParameter;
   }
-
 
   //Refactor Parameter Object
   @Action
@@ -245,7 +230,7 @@ public class ExtractModel implements FsmModel {
     }
   }
 
-  public boolean parameterObjectGuard(){
+  private boolean parameterObjectGuard(){
     return state == State.ParameterObject && (isMethod(selectedText) && methodHasParams(selectedText));
   }
 
@@ -256,10 +241,9 @@ public class ExtractModel implements FsmModel {
     }
   }
 
-  public boolean refactorParameterObjectGuard(){
+  private boolean refactorParameterObjectGuard(){
     return state == State.RefactorParameterObject;
   }
-
 
   //Method
   @Action
@@ -271,10 +255,9 @@ public class ExtractModel implements FsmModel {
     }
   }
 
-  public boolean methodGuard(){
+  private boolean methodGuard(){
     return state == State.Method &&  (isExpression(selectedText) || isStatement(selectedText));
   }
-
 
   @Action
   public void refactorMethod() {
@@ -284,11 +267,9 @@ public class ExtractModel implements FsmModel {
     }
   }
 
-  public boolean refactorMethodGuard(){
+  private boolean refactorMethodGuard(){
     return state == State.RefactorMethod;
   }
-
-  //Method Object
 
   @Action
   public void methodObject() {
@@ -299,7 +280,7 @@ public class ExtractModel implements FsmModel {
     }
   }
 
-  public boolean methodObjectGuard(){
+  private boolean methodObjectGuard(){
     return state == State.MethodObject &&  (isExpression(selectedText) || isStatement(selectedText));
   }
 
@@ -311,12 +292,10 @@ public class ExtractModel implements FsmModel {
     }
   }
 
-  public boolean refactorMethodObjectGuard(){
+  private boolean refactorMethodObjectGuard(){
     return state == State.RefactorMethodObject;
   }
 
-
-  //Delegate
   @Action
   public void delegate() {
     if(delegateGuard()) {
@@ -327,7 +306,7 @@ public class ExtractModel implements FsmModel {
     }
   }
 
-  public boolean delegateGuard(){
+  private boolean delegateGuard(){
     return state == State.Delegate;
   }
 
@@ -339,12 +318,10 @@ public class ExtractModel implements FsmModel {
     }
   }
 
-  public boolean refactorDelegateGuard(){
+  private boolean refactorDelegateGuard(){
     return state == State.RefactorDelegate;
   }
 
-
-  //Interface
   @Action
   public void iinterface() {
     if(iinterfaceGuard()) {
@@ -355,7 +332,7 @@ public class ExtractModel implements FsmModel {
     }
   }
 
-  public boolean iinterfaceGuard(){
+  private boolean iinterfaceGuard(){
     return state == State.Interface;
   }
 
@@ -367,11 +344,10 @@ public class ExtractModel implements FsmModel {
     }
   }
 
-  public boolean refactorInterfaceGuard(){
+  private boolean refactorInterfaceGuard(){
     return state == State.RefactorInterface;
   }
 
-  //Superclass
   @Action
   public void superclass() {
     if(superclassGuard()) {
@@ -382,7 +358,7 @@ public class ExtractModel implements FsmModel {
     }
   }
 
-  public boolean superclassGuard(){
+  private boolean superclassGuard(){
     return state == State.Superclass;
   }
 
@@ -394,16 +370,12 @@ public class ExtractModel implements FsmModel {
     }
   }
 
-  public boolean refactorSuperclassGuard(){
+  private boolean refactorSuperclassGuard(){
     return state == State.Superclass;
   }
 
-  public void setState(String choice){
+  private void setState(String choice){
     state = State.valueOf(choice);
-  }
-
-  private interface GuardInterface {
-    public boolean guard(State state);
   }
 
   private boolean isExpression(String selectedText){

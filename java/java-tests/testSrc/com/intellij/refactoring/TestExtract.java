@@ -44,7 +44,8 @@ public class TestExtract {
   @Test
   public void regressionTest1() throws Exception {
     ExtractModel model = new ExtractModel();
-    //model.setText();
+    model.variable();
+    model.refactorVariable();
   }
 
   @Test
