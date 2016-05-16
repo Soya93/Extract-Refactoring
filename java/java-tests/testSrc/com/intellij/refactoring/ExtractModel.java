@@ -378,39 +378,43 @@ public class ExtractModel implements FsmModel {
     state = State.valueOf(choice);
   }
 
+  //Used in variable, constant, parameter, method, method object,
   private boolean isExpression(String selectedText){
-    //TODO
-    return true;
+    return  selectedText.contains(";");
   }
 
+  //Used in constant, parameter,
   private boolean isLocalVar(String selectedText){
     //TODO
     return true;
   }
 
-  private boolean isVoid(String text) {
-    // TODO
-    return true;
-  }
-
+  //Used in functional parameter
   private boolean isSupportedContext(String selectedText){
     //TODO
     return true;
   }
 
+  //Used in field
+  private boolean isVoid(String selectedText){
+    return selectedText.contains("void");
+  }
+
+  //Used in parameter object,
   private boolean isMethod(String selectedText){
     //TODO
     return true;
   }
 
+  //Used in parameter object,
   private boolean methodHasParams(String selectedText){
     //TODO
     return true;
   }
 
+  //Used in method, method object,
   private boolean isStatement(String selectedText){
-    //TODO
-    return true;
+    return  Boolean.valueOf(selectedText);
   }
 
 }
