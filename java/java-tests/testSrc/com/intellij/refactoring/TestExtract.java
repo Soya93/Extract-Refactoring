@@ -15,10 +15,6 @@ package com.intellij.refactoring;
  * limitations under the License.
  */
 
-import com.intellij.ide.ui.AppearanceOptionsTopHitProvider;
-import com.intellij.openapi.application.Application;
-import com.intellij.openapi.application.ApplicationManager;
-import junit.framework.TestCase;
 import nz.ac.waikato.modeljunit.RandomTester;
 import nz.ac.waikato.modeljunit.StopOnFailureListener;
 import nz.ac.waikato.modeljunit.Tester;
@@ -26,8 +22,9 @@ import nz.ac.waikato.modeljunit.VerboseListener;
 import nz.ac.waikato.modeljunit.coverage.ActionCoverage;
 import nz.ac.waikato.modeljunit.coverage.StateCoverage;
 import nz.ac.waikato.modeljunit.coverage.TransitionCoverage;
+import org.junit.Test;
 
-public class TestExtract extends TestCase {
+public class TestExtract {
 
   private ExtractModel model;
 
@@ -39,6 +36,7 @@ public class TestExtract extends TestCase {
     model = null;
   }
 
+  @Test
   public void testExtractModel() throws Exception {
     Tester tester = new RandomTester(model);
 
@@ -53,25 +51,25 @@ public class TestExtract extends TestCase {
     tester.printCoverage();
   }
 
+  @Test
   public void testVariable() throws Exception {
     model = new ExtractModel();
     model.variable();
     model.refactorVariable();
   }
 
+  @Test
   public void testConstant() throws Exception {
     model = new ExtractModel();
     model.constant();
     model.refactorConstant();
   }
 
+  @Test
   public void testField() throws Exception {
     model = new ExtractModel();
     model.field();
     model.refactorField();
   }
 
-  public void testRegression2() throws Exception {
-    //model.setText();
-  }
 }

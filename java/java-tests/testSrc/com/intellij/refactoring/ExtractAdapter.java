@@ -25,7 +25,6 @@ public class ExtractAdapter extends LightRefactoringTestCase {
 
   @Test
   public void testVariable() throws Exception {
-    // TODO Remove
     choiceInput(ExtractModel.Choice.Variable);
     refactorVariable("b");
   }
