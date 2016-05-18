@@ -73,4 +73,10 @@ public class TestExtract {
     model.refactorField();
   }
 
+  @Test
+  public void testParameter() throws Exception {
+    model.parameter();
+    model.refactorField();
+  }
+
 }

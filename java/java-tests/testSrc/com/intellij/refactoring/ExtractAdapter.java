@@ -15,7 +15,9 @@
  */
 package com.intellij.refactoring;
 
+import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.refactoring.introduceField.BaseExpressionToFieldHandler;
+import com.intellij.refactoring.introduceParameter.IntroduceParameterHandler;
 import org.junit.Test;
 
 public class ExtractAdapter extends LightRefactoringTestCase {
@@ -24,15 +26,9 @@ public class ExtractAdapter extends LightRefactoringTestCase {
   private static final String AFTER_TEST_FILE_ENDING = ".after.java";
 
   @Test
-  public void testVariable() throws Exception {
-    choiceInput(ExtractModel.Choice.Variable);
-    refactorVariable("b");
-  }
-
-  @Test
-  public void testField() throws Exception {
-    choiceInput(ExtractModel.Choice.Field);
-    refactorField();
+  public void test() throws Exception {
+    choiceInput(ExtractModel.Choice.Parameter);
+    refactorParameter();
   }
 
   public void choiceInput(ExtractModel.Choice choice) throws Exception {
@@ -61,7 +57,16 @@ public class ExtractAdapter extends LightRefactoringTestCase {
   }
 
   public void refactorParameter() {
-
+      boolean enabled = true;
+      try {
+        enabled = myEditor.getSettings().isVariableInplaceRenameEnabled();
+        myEditor.getSettings().setVariableInplaceRenameEnabled(false);
+        new IntroduceParameterHandler().invoke(getProject(), myEditor, myFile, DataContext.EMPTY_CONTEXT);
+        validateResults(ExtractModel.Choice.Parameter);
+      }
+      finally {
+        myEditor.getSettings().setVariableInplaceRenameEnabled(enabled);
+      }
   }
 
   public void refactorFunctionalParameter() {
