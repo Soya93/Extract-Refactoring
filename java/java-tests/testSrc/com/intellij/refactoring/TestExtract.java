@@ -22,16 +22,20 @@ import nz.ac.waikato.modeljunit.VerboseListener;
 import nz.ac.waikato.modeljunit.coverage.ActionCoverage;
 import nz.ac.waikato.modeljunit.coverage.StateCoverage;
 import nz.ac.waikato.modeljunit.coverage.TransitionCoverage;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 public class TestExtract {
 
   private ExtractModel model;
 
-  protected void setUp() {
+  @Before
+  public void setUp() {
     model = new ExtractModel();
   }
 
+  @After
   public void tearDown() {
     model = null;
   }
@@ -53,21 +57,18 @@ public class TestExtract {
 
   @Test
   public void testVariable() throws Exception {
-    model = new ExtractModel();
     model.variable();
     model.refactorVariable();
   }
 
   @Test
   public void testConstant() throws Exception {
-    model = new ExtractModel();
     model.constant();
     model.refactorConstant();
   }
 
   @Test
   public void testField() throws Exception {
-    model = new ExtractModel();
     model.field();
     model.refactorField();
   }

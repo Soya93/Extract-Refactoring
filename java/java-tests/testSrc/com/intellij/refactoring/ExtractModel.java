@@ -123,8 +123,6 @@ public class ExtractModel implements FsmModel {
     return state == State.RefactorVariable;
   }
 
-
-  // Constant
   @Action
   public void constant() {
     if(constantGuard()) {
@@ -150,7 +148,6 @@ public class ExtractModel implements FsmModel {
     return state == State.RefactorConstant;
   }
 
-  // Field
   @Action
   public void field() {
     if(fieldGuard()) {
@@ -176,8 +173,6 @@ public class ExtractModel implements FsmModel {
     return state == State.RefactorConstant;
   }
 
-
-  //Parameter
   @Action
   public void parameter() {
     if(parameterGuard()) {
@@ -203,7 +198,6 @@ public class ExtractModel implements FsmModel {
     return state == State.RefactorParameter;
   }
 
-  //Functional Parameter
   @Action
   public void functionalParameter() {
     if(functionalParameterGuard()) {
@@ -228,7 +222,6 @@ public class ExtractModel implements FsmModel {
     return state == State.RefactorFunctionalParameter;
   }
 
-  //Refactor Parameter Object
   @Action
   public void parameterObject() {
     if(parameterObjectGuard()) {
@@ -253,7 +246,6 @@ public class ExtractModel implements FsmModel {
     return state == State.RefactorParameterObject;
   }
 
-  //Method
   @Action
   public void method() {
     if(methodGuard()) {
