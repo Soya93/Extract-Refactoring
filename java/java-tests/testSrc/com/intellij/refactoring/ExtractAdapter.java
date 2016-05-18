@@ -16,14 +16,74 @@
 package com.intellij.refactoring;
 
 import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.psi.PsiFile;
 import com.intellij.refactoring.introduceField.BaseExpressionToFieldHandler;
 import com.intellij.refactoring.introduceParameter.IntroduceParameterHandler;
+import nz.ac.waikato.modeljunit.*;
+import nz.ac.waikato.modeljunit.coverage.ActionCoverage;
+import nz.ac.waikato.modeljunit.coverage.StateCoverage;
+import nz.ac.waikato.modeljunit.coverage.TransitionCoverage;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 public class ExtractAdapter extends LightRefactoringTestCase {
 
   private static final String BEFORE_TEST_FILE_ENDING = ".java";
   private static final String AFTER_TEST_FILE_ENDING = ".after.java";
+
+  private ExtractModel model;
+
+  @Before
+  public void setUp() throws Exception {
+    super.setUp();
+    model = new ExtractModel();
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    super.tearDown();
+    model = null;
+  }
+
+  @Test
+  public void testExtractModel() throws Exception {
+    Tester tester = new RandomTester(model);
+
+    tester.buildGraph();
+    tester.addListener(new VerboseListener());
+    tester.addListener(new StopOnFailureListener());
+    tester.addCoverageMetric(new TransitionCoverage());
+    tester.addCoverageMetric(new StateCoverage());
+    tester.addCoverageMetric(new ActionCoverage());
+
+    tester.generate(200000);
+    tester.printCoverage();
+  }
+
+  @Test
+  public void testVariable() throws Exception {
+    model.variable();
+    model.refactorVariable();
+  }
+
+  @Test
+  public void testConstant() throws Exception {
+    model.constant();
+    model.refactorConstant();
+  }
+
+  @Test
+  public void testField() throws Exception {
+    model.field();
+    model.refactorField();
+  }
+
+  @Test
+  public void testParameter() throws Exception {
+    model.parameter();
+    model.refactorField();
+  }
 
   @Test
   public void test() throws Exception {
@@ -33,15 +93,15 @@ public class ExtractAdapter extends LightRefactoringTestCase {
 
   public void choiceInput(ExtractModel.Choice choice) throws Exception {
    if (choice != null) {
-      configureByFile(choice.getFileName() + BEFORE_TEST_FILE_ENDING);
-    } else {
+     configureByFile(choice.getFileName() + BEFORE_TEST_FILE_ENDING);
+     PsiFile file = getFile();
+   } else {
      throw new IllegalStateException("No choice selected");
    }
   }
 
   public void refactorVariable(String name) {
-    MockIntroduceVariableHandler handler = new MockIntroduceVariableHandler(name, false, false, true, "boolean");
-    handler.invoke(getProject(), getEditor(), getFile(), null);
+    new MockIntroduceVariableHandler(name, false, false, true, "boolean").invoke(getProject(), getEditor(), getFile(), null);
     validateResults(ExtractModel.Choice.Variable);
   }
 

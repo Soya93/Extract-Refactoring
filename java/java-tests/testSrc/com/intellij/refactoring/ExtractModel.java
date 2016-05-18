@@ -15,11 +15,14 @@
  */
 package com.intellij.refactoring;
 
+import com.intellij.ide.ui.AppearanceOptionsTopHitProvider;
 import com.intellij.idea.IdeaTestApplication;
 import com.intellij.openapi.application.Application;
 import nz.ac.waikato.modeljunit.Action;
 import nz.ac.waikato.modeljunit.FsmModel;
 import org.junit.Test;
+
+import java.util.Random;
 
 public class ExtractModel implements FsmModel {
 
@@ -73,9 +76,9 @@ public class ExtractModel implements FsmModel {
     RefactorSuperclass
   }
 
-  private String selectedText = "";
   private State state = State.Home;
   private ExtractAdapter adapter = new ExtractAdapter();
+  private Random random = new Random();
 
   @Override
   public Object getState() {
@@ -84,10 +87,7 @@ public class ExtractModel implements FsmModel {
 
   @Override
   public void reset(boolean b) {
-    if (b) {
-      state = State.Home;
-      selectedText = "";
-    }
+    state = State.Home;
   }
 
   @Test
@@ -100,22 +100,22 @@ public class ExtractModel implements FsmModel {
   public void variable() throws Exception {
     state = State.Variable;
     if(variableGuard()) {
-      state = State.RefactorVariable;
       adapter.choiceInput(Choice.Variable);
+      state = State.RefactorVariable;
     } else {
       state = State.Home;
     }
   }
 
   private boolean variableGuard(){
-    return state == State.Variable && isExpression(selectedText);
+    return state == State.Variable && isExpression();
   }
 
   @Action
   public void refactorVariable() {
     if(refactorVariableGuard()) {
-      state = State.Home;
       adapter.refactorVariable("b");
+      state = State.Home;
     }
   }
 
@@ -124,16 +124,17 @@ public class ExtractModel implements FsmModel {
   }
 
   @Action
-  public void constant() {
+  public void constant() throws Exception {
     if(constantGuard()) {
       state = State.RefactorConstant;
+      adapter.choiceInput(Choice.Constant);
     } else {
       state = State.Home;
     }
   }
 
   private boolean constantGuard(){
-    return state == State.Constant && (isExpression(selectedText) || isLocalVar(selectedText));
+    return state == State.Constant && (isExpression() || isLocalVar());
   }
 
   @Action
@@ -149,16 +150,17 @@ public class ExtractModel implements FsmModel {
   }
 
   @Action
-  public void field() {
+  public void field() throws Exception {
     if(fieldGuard()) {
       state = State.RefactorField;
+      adapter.choiceInput(Choice.Field);
     } else {
       state = State.Home;
     }
   }
 
   private boolean fieldGuard(){
-    return state == State.Field && !isVoid(selectedText);
+    return state == State.Field && !isVoid();
   }
 
   @Action
@@ -174,16 +176,17 @@ public class ExtractModel implements FsmModel {
   }
 
   @Action
-  public void parameter() {
+  public void parameter() throws Exception {
     if(parameterGuard()) {
       state = State.RefactorParameter;
+      adapter.choiceInput(Choice.Parameter);
     } else {
       state = State.Home;
     }
   }
 
   private boolean parameterGuard(){
-    return state == State.Parameter && (isExpression(selectedText) || isLocalVar(selectedText));
+    return state == State.Parameter && (isExpression() || isLocalVar());
   }
 
   @Action
@@ -208,7 +211,7 @@ public class ExtractModel implements FsmModel {
   }
 
   private boolean functionalParameterGuard(){
-    return state == State.FunctionalParameter && isSupportedContext(selectedText);
+    return state == State.FunctionalParameter && isSupportedContext();
   }
 
   public void refactorFunctionalParameter() {
@@ -232,7 +235,7 @@ public class ExtractModel implements FsmModel {
   }
 
   private boolean parameterObjectGuard(){
-    return state == State.ParameterObject && (isMethod(selectedText) && methodHasParams(selectedText));
+    return state == State.ParameterObject && (isMethod() && methodHasParams());
   }
 
   public void refactorParameterObject() {
@@ -256,7 +259,7 @@ public class ExtractModel implements FsmModel {
   }
 
   private boolean methodGuard(){
-    return state == State.Method &&  (isExpression(selectedText) || isStatement(selectedText));
+    return state == State.Method &&  (isExpression() || isStatement());
   }
 
   @Action
@@ -281,7 +284,7 @@ public class ExtractModel implements FsmModel {
   }
 
   private boolean methodObjectGuard(){
-    return state == State.MethodObject &&  (isExpression(selectedText) || isStatement(selectedText));
+    return state == State.MethodObject &&  (isExpression() || isStatement());
   }
 
   @Action
@@ -299,7 +302,7 @@ public class ExtractModel implements FsmModel {
   @Action
   public void delegate() {
     if(delegateGuard()) {
-      //adapter.delegate(); //setName, setPackage, setMembers, setVisibility
+      // adapter.delegate(); //setName, setPackage, setMembers, setVisibility
       state = State.RefactorDelegate;
     } else { //cancel()
       state = State.Home;
@@ -374,47 +377,39 @@ public class ExtractModel implements FsmModel {
     return state == State.Superclass;
   }
 
-  private void setState(String choice){
-    state = State.valueOf(choice);
-  }
-
   //Used in variable, constant, parameter, method, method object,
-  private boolean isExpression(String selectedText){
-    return  selectedText.contains(";");
+  private boolean isExpression(){
+    return random.nextBoolean();
   }
 
   //Used in constant, parameter,
-  private boolean isLocalVar(String selectedText){
-    //TODO
-    return true;
+  private boolean isLocalVar(){
+    return random.nextBoolean();
   }
 
   //Used in functional parameter
-  private boolean isSupportedContext(String selectedText){
-    //TODO
-    return true;
+  private boolean isSupportedContext(){
+    return random.nextBoolean();
   }
 
   //Used in field
-  private boolean isVoid(String selectedText){
-    return selectedText.contains("void");
+  private boolean isVoid(){
+    return random.nextBoolean();
   }
 
   //Used in parameter object,
-  private boolean isMethod(String selectedText){
-    //TODO
-    return true;
+  private boolean isMethod(){
+    return random.nextBoolean();
   }
 
   //Used in parameter object,
-  private boolean methodHasParams(String selectedText){
-    //TODO
-    return true;
+  private boolean methodHasParams(){
+    return random.nextBoolean();
   }
 
   //Used in method, method object,
-  private boolean isStatement(String selectedText){
-    return  Boolean.valueOf(selectedText);
+  private boolean isStatement(){
+    return random.nextBoolean();
   }
 
 }

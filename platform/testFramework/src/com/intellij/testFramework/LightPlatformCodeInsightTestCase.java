@@ -117,8 +117,6 @@ public abstract class LightPlatformCodeInsightTestCase extends LightPlatformTest
     try {
       final File ioFile = new File(getTestDataPath() + filePath);
       String fileText = FileUtilRt.loadFile(ioFile, CharsetToolkit.UTF8, true);
-      System.out.println(ioFile);
-      System.out.println(fileText);
       configureFromFileText(ioFile.getName(), fileText);
     }
     catch (IOException e) {
