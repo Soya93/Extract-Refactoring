@@ -26,6 +26,7 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.IdeActions;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.Result;
+import com.intellij.openapi.application.RunResult;
 import com.intellij.openapi.application.ex.PathManagerEx;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.command.WriteCommandAction;
@@ -116,6 +117,8 @@ public abstract class LightPlatformCodeInsightTestCase extends LightPlatformTest
     try {
       final File ioFile = new File(getTestDataPath() + filePath);
       String fileText = FileUtilRt.loadFile(ioFile, CharsetToolkit.UTF8, true);
+      System.out.println(ioFile);
+      System.out.println(fileText);
       configureFromFileText(ioFile.getName(), fileText);
     }
     catch (IOException e) {
@@ -148,7 +151,7 @@ public abstract class LightPlatformCodeInsightTestCase extends LightPlatformTest
    */
   @NotNull
   protected static Document configureFromFileText(@NonNls @NotNull final String fileName, @NonNls @NotNull final String fileText) {
-    return new WriteCommandAction<Document>(null) {
+     WriteCommandAction<Document> commandAction = new WriteCommandAction<Document>(null) {
       @Override
       protected void run(@NotNull Result<Document> result) throws Throwable {
         if (myVFile != null) {
@@ -179,7 +182,10 @@ public abstract class LightPlatformCodeInsightTestCase extends LightPlatformTest
         setupEditorForInjectedLanguage();
         result.setResult(document);
       }
-    }.execute().getResultObject();
+    };
+    RunResult<Document> result = commandAction.execute();
+    Document document = result.getResultObject();
+    return document;
   }
 
   @NotNull

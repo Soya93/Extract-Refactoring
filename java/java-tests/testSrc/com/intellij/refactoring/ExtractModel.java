@@ -15,28 +15,31 @@
  */
 package com.intellij.refactoring;
 
+import com.intellij.idea.IdeaTestApplication;
+import com.intellij.openapi.application.Application;
 import nz.ac.waikato.modeljunit.Action;
 import nz.ac.waikato.modeljunit.FsmModel;
+import org.junit.Test;
 
 public class ExtractModel implements FsmModel {
 
   public enum Choice {
-    Variable("/refactoring/testExtract/RefactorVariable"),
-    Constant(""),
-    Field(""),
-    Parameter(""),
-    FunctionalParameter(""),
-    ParameterObject(""),
-    Method(""),
-    MethodObject(""),
-    Delegate(""),
-    Interface(""),
-    Superclass("");
+    Variable,
+    Constant,
+    Field,
+    Parameter,
+    FunctionalParameter,
+    ParameterObject,
+    Method,
+    MethodObject,
+    Delegate,
+    Interface,
+    Superclass;
 
     private String fileName;
 
-    private Choice(String fileName) {
-      this.fileName = fileName;
+    private Choice() {
+      this.fileName = "/refactoring/testExtract/Refactor" + this.name();
     }
 
     public String getFileName() {
@@ -72,7 +75,6 @@ public class ExtractModel implements FsmModel {
 
   private String selectedText = "";
   private State state = State.Home;
-  private Choice choice;
   private ExtractAdapter adapter = new ExtractAdapter();
 
   @Override
@@ -85,15 +87,21 @@ public class ExtractModel implements FsmModel {
     if (b) {
       state = State.Home;
       selectedText = "";
-      choice = null;
     }
   }
 
+  @Test
+  public void test() throws Exception {
+    this.variable();
+    this.refactorVariable();
+  }
+
   @Action
-  public void variable() {
+  public void variable() throws Exception {
     state = State.Variable;
     if(variableGuard()) {
       state = State.RefactorVariable;
+      adapter.choiceInput(Choice.Variable);
     } else {
       state = State.Home;
     }
@@ -106,8 +114,8 @@ public class ExtractModel implements FsmModel {
   @Action
   public void refactorVariable() {
     if(refactorVariableGuard()) {
-      adapter.refactorVariable("b");
       state = State.Home;
+      adapter.refactorVariable("b");
     }
   }
 
@@ -133,7 +141,7 @@ public class ExtractModel implements FsmModel {
   @Action
   public void refactorConstant() {
     if(refactorConstantGuard()){
-      adapter.refactorConstant();
+      adapter.refactorConstant("CONSTANT");
       state = State.Home;
     }
   }

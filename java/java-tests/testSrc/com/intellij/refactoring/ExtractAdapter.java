@@ -15,16 +15,8 @@
  */
 package com.intellij.refactoring;
 
-import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.*;
-import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.refactoring.extractclass.usageInfo.MakeMethodDelegate;
-import org.jetbrains.annotations.NonNls;
-import org.jetbrains.annotations.Nullable;
+import com.intellij.refactoring.introduceField.BaseExpressionToFieldHandler;
 import org.junit.Test;
-
-import java.io.File;
 
 public class ExtractAdapter extends LightRefactoringTestCase {
 
@@ -32,10 +24,16 @@ public class ExtractAdapter extends LightRefactoringTestCase {
   private static final String AFTER_TEST_FILE_ENDING = ".after.java";
 
   @Test
-  public void test() throws Exception {
+  public void testVariable() throws Exception {
     // TODO Remove
     choiceInput(ExtractModel.Choice.Variable);
     refactorVariable("b");
+  }
+
+  @Test
+  public void testField() throws Exception {
+    choiceInput(ExtractModel.Choice.Field);
+    refactorField();
   }
 
   public void choiceInput(ExtractModel.Choice choice) throws Exception {
@@ -49,15 +47,18 @@ public class ExtractAdapter extends LightRefactoringTestCase {
   public void refactorVariable(String name) {
     MockIntroduceVariableHandler handler = new MockIntroduceVariableHandler(name, false, false, true, "boolean");
     handler.invoke(getProject(), getEditor(), getFile(), null);
-    checkResultByFile(ExtractModel.Choice.Variable.getFileName() + AFTER_TEST_FILE_ENDING);
+    validateResults(ExtractModel.Choice.Variable);
   }
 
-  public void refactorConstant() {
-
+  public void refactorConstant(String name) {
+    new MockIntroduceConstantHandler(null, name).invoke(getProject(), getEditor(), getFile(), null);
+    validateResults(ExtractModel.Choice.Constant);
   }
 
   public void refactorField() {
-
+    new MockIntroduceFieldHandler(BaseExpressionToFieldHandler.InitializationPlace.IN_CURRENT_METHOD, false)
+      .invoke(getProject(), myEditor, myFile, null);
+    validateResults(ExtractModel.Choice.Field);
   }
 
   public void refactorParameter() {
@@ -90,6 +91,10 @@ public class ExtractAdapter extends LightRefactoringTestCase {
 
   public void refactorSuperclass(){
 
+  }
+
+  private void validateResults(ExtractModel.Choice choice) {
+    checkResultByFile(choice.getFileName() + AFTER_TEST_FILE_ENDING);
   }
 
 }

@@ -14,6 +14,11 @@ package com.intellij.refactoring;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import com.intellij.ide.ui.AppearanceOptionsTopHitProvider;
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
+import junit.framework.TestCase;
 import nz.ac.waikato.modeljunit.RandomTester;
 import nz.ac.waikato.modeljunit.StopOnFailureListener;
 import nz.ac.waikato.modeljunit.Tester;
@@ -21,14 +26,21 @@ import nz.ac.waikato.modeljunit.VerboseListener;
 import nz.ac.waikato.modeljunit.coverage.ActionCoverage;
 import nz.ac.waikato.modeljunit.coverage.StateCoverage;
 import nz.ac.waikato.modeljunit.coverage.TransitionCoverage;
-import org.junit.Test;
 
-public class TestExtract {
+public class TestExtract extends TestCase {
 
-  @Test
-  public void testFire() throws Exception {
-    ExtractModel fireModel = new ExtractModel();
-    Tester tester = new RandomTester(fireModel);
+  private ExtractModel model;
+
+  protected void setUp() {
+    model = new ExtractModel();
+  }
+
+  public void tearDown() {
+    model = null;
+  }
+
+  public void testExtractModel() throws Exception {
+    Tester tester = new RandomTester(model);
 
     tester.buildGraph();
     tester.addListener(new VerboseListener());
@@ -41,16 +53,25 @@ public class TestExtract {
     tester.printCoverage();
   }
 
-  @Test
-  public void regressionTest1() throws Exception {
-    ExtractModel model = new ExtractModel();
+  public void testVariable() throws Exception {
+    model = new ExtractModel();
     model.variable();
     model.refactorVariable();
   }
 
-  @Test
+  public void testConstant() throws Exception {
+    model = new ExtractModel();
+    model.constant();
+    model.refactorConstant();
+  }
+
+  public void testField() throws Exception {
+    model = new ExtractModel();
+    model.field();
+    model.refactorField();
+  }
+
   public void testRegression2() throws Exception {
-    ExtractModel model = new ExtractModel();
     //model.setText();
   }
 }
