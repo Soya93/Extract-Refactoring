@@ -94,7 +94,6 @@ public class ExtractAdapter extends LightRefactoringTestCase {
   public void choiceInput(ExtractModel.Choice choice) throws Exception {
    if (choice != null) {
      configureByFile(choice.getFileName() + BEFORE_TEST_FILE_ENDING);
-     PsiFile file = getFile();
    } else {
      throw new IllegalStateException("No choice selected");
    }
