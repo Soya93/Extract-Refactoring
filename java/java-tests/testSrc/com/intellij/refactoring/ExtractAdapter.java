@@ -23,6 +23,7 @@ import nz.ac.waikato.modeljunit.*;
 import nz.ac.waikato.modeljunit.coverage.ActionCoverage;
 import nz.ac.waikato.modeljunit.coverage.StateCoverage;
 import nz.ac.waikato.modeljunit.coverage.TransitionCoverage;
+import nz.ac.waikato.modeljunit.coverage.TransitionPairCoverage;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,16 +49,17 @@ public class ExtractAdapter extends LightRefactoringTestCase {
 
   @Test
   public void testExtractModel() throws Exception {
-    Tester tester = new RandomTester(model);
+    Tester tester = new AllRoundTester(model);
 
     tester.buildGraph();
     tester.addListener(new VerboseListener());
     tester.addListener(new StopOnFailureListener());
     tester.addCoverageMetric(new TransitionCoverage());
+    tester.addCoverageMetric(new TransitionPairCoverage());
     tester.addCoverageMetric(new StateCoverage());
     tester.addCoverageMetric(new ActionCoverage());
 
-    tester.generate(200000);
+    tester.generate(30000);
     tester.printCoverage();
   }
 
@@ -82,7 +84,7 @@ public class ExtractAdapter extends LightRefactoringTestCase {
   @Test
   public void testParameter() throws Exception {
     model.parameter();
-    model.refactorField();
+    model.refactorParameter();
   }
 
   @Test

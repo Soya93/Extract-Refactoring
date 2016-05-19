@@ -15,13 +15,11 @@
  */
 package com.intellij.refactoring;
 
-import com.intellij.ide.ui.AppearanceOptionsTopHitProvider;
-import com.intellij.idea.IdeaTestApplication;
-import com.intellij.openapi.application.Application;
 import nz.ac.waikato.modeljunit.Action;
 import nz.ac.waikato.modeljunit.FsmModel;
-import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class ExtractModel implements FsmModel {
@@ -76,6 +74,24 @@ public class ExtractModel implements FsmModel {
     RefactorSuperclass
   }
 
+  private static final List<Choice> HOME_CHOICES;
+
+  static {
+    HOME_CHOICES = new ArrayList<>();
+    HOME_CHOICES.add(Choice.Variable);
+    HOME_CHOICES.add(Choice.Constant);
+    HOME_CHOICES.add(Choice.Field);
+    HOME_CHOICES.add(Choice.Parameter);
+    // TODO Future implementation
+    //HOME_CHOICES.add(Choice.FunctionalParameter);
+    //HOME_CHOICES.add(Choice.ParameterObject);
+    //HOME_CHOICES.add(Choice.Method);
+    //HOME_CHOICES.add(Choice.MethodObject);
+    //HOME_CHOICES.add(Choice.Delegate);
+    //HOME_CHOICES.add(Choice.Interface);
+    //HOME_CHOICES.add(Choice.Superclass);
+  }
+
   private State state = State.Home;
   private ExtractAdapter adapter = new ExtractAdapter();
   private Random random = new Random();
@@ -90,326 +106,270 @@ public class ExtractModel implements FsmModel {
     state = State.Home;
   }
 
-  @Test
-  public void test() throws Exception {
-    this.variable();
-    this.refactorVariable();
+  @Action
+  public void home() throws Exception {
+    if (state == State.Home) {
+      Choice choice = HOME_CHOICES.get(random.nextInt(HOME_CHOICES.size()));
+      adapter.choiceInput(choice); // "select text"
+      state = State.valueOf(choice.name());
+    }
   }
 
   @Action
   public void variable() throws Exception {
-    state = State.Variable;
-    if(variableGuard()) {
-      adapter.choiceInput(Choice.Variable);
-      state = State.RefactorVariable;
-    } else {
-      state = State.Home;
+    if (state == State.Variable) {
+      if(isExpression()) {
+        adapter.choiceInput(Choice.Variable);
+        state = State.RefactorVariable;
+      } else {
+        state = State.Home;
+      }
     }
-  }
-
-  private boolean variableGuard(){
-    return state == State.Variable && isExpression();
   }
 
   @Action
   public void refactorVariable() {
-    if(refactorVariableGuard()) {
+    if(state == State.RefactorVariable) {
       adapter.refactorVariable("b");
       state = State.Home;
     }
   }
 
-  private boolean refactorVariableGuard(){
-    return state == State.RefactorVariable;
-  }
-
   @Action
   public void constant() throws Exception {
-    if(constantGuard()) {
-      state = State.RefactorConstant;
-      adapter.choiceInput(Choice.Constant);
-    } else {
-      state = State.Home;
+    if (state == State.Constant) {
+      if(isExpression() || isLocalVar()) {
+        state =  State.RefactorConstant;
+        adapter.choiceInput(Choice.Constant);
+      } else {
+        state = State.Home;
+      }
     }
-  }
-
-  private boolean constantGuard(){
-    return state == State.Constant && (isExpression() || isLocalVar());
   }
 
   @Action
   public void refactorConstant() {
-    if(refactorConstantGuard()){
+    if (state == State.RefactorConstant) {
       adapter.refactorConstant("CONSTANT");
       state = State.Home;
     }
   }
 
-  private boolean refactorConstantGuard(){
-    return state == State.RefactorConstant;
-  }
-
   @Action
   public void field() throws Exception {
-    if(fieldGuard()) {
-      state = State.RefactorField;
-      adapter.choiceInput(Choice.Field);
-    } else {
-      state = State.Home;
+    if(state == State.Field) {
+      if (isNotVoid()) {
+        state = State.RefactorField;
+        adapter.choiceInput(Choice.Field);
+      } else {
+        state = State.Home;
+      }
     }
-  }
-
-  private boolean fieldGuard(){
-    return state == State.Field && !isVoid();
   }
 
   @Action
   public void refactorField() {
-    if(refactorFieldGuard()){
+    if(state == State.RefactorField){
       adapter.refactorField();
       state = State.Home;
     }
   }
 
-  private boolean refactorFieldGuard(){
-    return state == State.RefactorConstant;
-  }
-
   @Action
   public void parameter() throws Exception {
-    if(parameterGuard()) {
-      state = State.RefactorParameter;
-      adapter.choiceInput(Choice.Parameter);
-    } else {
-      state = State.Home;
+    if (state == State.Parameter) {
+      if(isExpression() || isLocalVar()) {
+        state = State.RefactorParameter;
+        adapter.choiceInput(Choice.Parameter);
+      } else {
+        state = State.Home;
+      }
     }
-  }
-
-  private boolean parameterGuard(){
-    return state == State.Parameter && (isExpression() || isLocalVar());
   }
 
   @Action
   public void refactorParameter() {
-    if(refactorFieldGuard()) {
+    if(state == State.RefactorParameter) {
       adapter.refactorParameter();
       state = State.Home;
     }
   }
 
-  private boolean refactorParameterGuard(){
-    return state == State.RefactorParameter;
-  }
-
   @Action
   public void functionalParameter() {
-    if(functionalParameterGuard()) {
-      state = State.RefactorFunctionalParameter;
-    } else {
-      state = State.Home;
+    if (state == State.FunctionalParameter) {
+      if(isSupportedContext()) {
+        state = State.RefactorFunctionalParameter;
+      } else {
+        state = State.Home;
+      }
     }
   }
 
-  private boolean functionalParameterGuard(){
-    return state == State.FunctionalParameter && isSupportedContext();
-  }
-
   public void refactorFunctionalParameter() {
-    if(refactorFunctionalParameterGuard()) {
+    if(state == State.RefactorFunctionalParameter) {
       adapter.refactorFunctionalParameter();
       state = State.Home;
     }
   }
 
-  private boolean refactorFunctionalParameterGuard(){
-    return state == State.RefactorFunctionalParameter;
-  }
-
   @Action
   public void parameterObject() {
-    if(parameterObjectGuard()) {
-      state = State.RefactorParameterObject;
-    } else {
-      state = State.Home;
+    if(state == State.ParameterObject) {
+      if (isMethod() && methodHasParams()) {
+        state = State.RefactorParameterObject;
+      } else {
+        state = State.Home;
+      }
     }
   }
 
-  private boolean parameterObjectGuard(){
-    return state == State.ParameterObject && (isMethod() && methodHasParams());
-  }
-
   public void refactorParameterObject() {
-    if(refactorParameterObjectGuard()) {
+    if(state == State.RefactorParameterObject) {
       adapter.refactorParameterObject();
       state = State.Home;
     }
   }
 
-  private boolean refactorParameterObjectGuard(){
-    return state == State.RefactorParameterObject;
-  }
-
   @Action
   public void method() {
-    if(methodGuard()) {
-      state = State.RefactorMethod;
-    } else {
-      state = State.Home;
+    if(state == State.Method) {
+      if (isExpression() || isStatement()) {
+        state = State.RefactorMethod;
+      } else {
+        state = State.Home;
+      }
     }
-  }
-
-  private boolean methodGuard(){
-    return state == State.Method &&  (isExpression() || isStatement());
   }
 
   @Action
   public void refactorMethod() {
-    if(refactorMethodGuard()) {
+    if(state == State.RefactorMethod) {
       adapter.refactorMethod();
       state = State.Home;
     }
   }
 
-  private boolean refactorMethodGuard(){
-    return state == State.RefactorMethod;
-  }
-
   @Action
   public void methodObject() {
-    if(methodObjectGuard()) {
-      state = State.RefactorMethodObject;
-    } else {
-      state = State.Home;
+    if(state == State.MethodObject) {
+      if (isExpression() || isStatement()) {
+        state = State.RefactorMethodObject;
+      } else {
+        state = State.Home;
+      }
     }
-  }
-
-  private boolean methodObjectGuard(){
-    return state == State.MethodObject &&  (isExpression() || isStatement());
   }
 
   @Action
   public void refactorMethodObject() {
-    if(refactorMethodObjectGuard()) {
+    if(state == State.RefactorMethodObject) {
       adapter.refactorMethodObject();
       state = State.Home;
     }
   }
 
-  private boolean refactorMethodObjectGuard(){
-    return state == State.RefactorMethodObject;
-  }
-
   @Action
   public void delegate() {
-    if(delegateGuard()) {
-      // adapter.delegate(); //setName, setPackage, setMembers, setVisibility
-      state = State.RefactorDelegate;
-    } else { //cancel()
-      state = State.Home;
+    if(state == State.Delegate) {
+      if (!isCancel()) {
+        // adapter.delegate(); //setName, setPackage, setMembers, setVisibility
+        state = State.RefactorDelegate;
+      } else { //cancel()
+        state = State.Home;
+      }
     }
-  }
-
-  private boolean delegateGuard(){
-    return state == State.Delegate;
   }
 
   @Action
   public void refactorDelegate() {
-    if(refactorDelegateGuard()) {
+    if(state == State.RefactorDelegate) {
       adapter.refactorDelegate();
       state = State.Home;
     }
   }
 
-  private boolean refactorDelegateGuard(){
-    return state == State.RefactorDelegate;
-  }
-
   @Action
   public void iinterface() {
-    if(iinterfaceGuard()) {
-      //adapter.iinterface(); // selectMethodFromClass, setName, setPackage, setMembers
-      state = State.RefactorInterface;
-    } else { //cancel()
-      state = State.Home;
+    if(state == State.Interface) {
+      if (!isCancel()) {
+        //adapter.iinterface(); // selectMethodFromClass, setName, setPackage, setMembers
+        state = State.RefactorInterface;
+      } else { //cancel()
+        state = State.Home;
+      }
     }
-  }
-
-  private boolean iinterfaceGuard(){
-    return state == State.Interface;
   }
 
   @Action
   public void refactorInterface() {
-    if(refactorInterfaceGuard()) {
+    if(state == State.RefactorInterface) {
       adapter.refactorInterface();
       state = State.Home;
     }
   }
 
-  private boolean refactorInterfaceGuard(){
-    return state == State.RefactorInterface;
-  }
-
   @Action
   public void superclass() {
-    if(superclassGuard()) {
-      //adapter.superclass(); // selectMethodFromClass, setName, setPackage, setMembers
-      state = State.RefactorSuperclass;
-    } else { //cancel()
-      state = State.Home;
+    if(state == State.Superclass) {
+      if (!isCancel()) {
+        //adapter.superclass(); // selectMethodFromClass, setName, setPackage, setMembers
+        state = State.RefactorSuperclass;
+      } else { //cancel()
+        state = State.Home;
+      }
     }
-  }
-
-  private boolean superclassGuard(){
-    return state == State.Superclass;
   }
 
   @Action
   public void refactorSuperclass() {
-    if(refactorSuperclassGuard()) {
+    if(state == State.RefactorSuperclass) {
       adapter.refactorSuperclass();
       state = State.Home;
     }
   }
 
-  private boolean refactorSuperclassGuard(){
-    return state == State.Superclass;
-  }
-
   //Used in variable, constant, parameter, method, method object,
   private boolean isExpression(){
-    return random.nextBoolean();
+    return getBoolean();
   }
 
   //Used in constant, parameter,
   private boolean isLocalVar(){
-    return random.nextBoolean();
+    return getBoolean();
   }
 
   //Used in functional parameter
   private boolean isSupportedContext(){
-    return random.nextBoolean();
+    return getBoolean();
   }
 
   //Used in field
-  private boolean isVoid(){
-    return random.nextBoolean();
+  private boolean isNotVoid(){
+    return getBoolean();
   }
 
   //Used in parameter object,
   private boolean isMethod(){
-    return random.nextBoolean();
+    return getBoolean();
   }
 
   //Used in parameter object,
   private boolean methodHasParams(){
-    return random.nextBoolean();
+    return getBoolean();
   }
 
   //Used in method, method object,
   private boolean isStatement(){
-    return random.nextBoolean();
+    return getBoolean();
+  }
+
+  private boolean isCancel(){
+    return getBoolean();
+  }
+
+  private boolean getBoolean() {
+    return true;
   }
 
 }
